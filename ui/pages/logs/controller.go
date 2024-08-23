@@ -1,5 +1,7 @@
 package logs
 
+import "gioui.org/app"
+
 type Controller struct {
 	view *View
 
@@ -18,20 +20,18 @@ func NewController(view *View) *Controller {
 }
 
 func (c *Controller) onClearlog() {
-	c.view.textBox.SetCode("")
+	c.view.text = []string{}
 }
 
 func (c *Controller) onGetNewLog(str string) {
-	c.view.textBox.AppendCodeTail(str)
+	c.view.AddLog(str)
 }
 
-func (c *Controller) SetChannels(logCh chan string) {
+func (c *Controller) SetChannels(w *app.Window, logCh chan string) {
 	go func() {
-		for {
-			select {
-			case log := <-logCh:
-				c.onGetNewLog(log)
-			}
+		for log := range logCh {
+			c.onGetNewLog(log)
+			w.Invalidate()
 		}
 	}()
 }

@@ -140,7 +140,7 @@ func (u *UI) load() error {
 }
 
 func (u *UI) SetChannels(logCh chan string) {
-	u.logController.SetChannels(logCh)
+	u.logController.SetChannels(u.window, logCh)
 }
 
 func (u *UI) Run() error {

@@ -30,6 +30,7 @@ func main() {
 	logCh := make(chan string)
 	uartServer := uart_server.NewUartServer()
 	go func() {
+		var bufLine []byte
 		for {
 			if err := uartServer.Open("/dev/ttyACM0"); err != nil {
 				time.Sleep(10 * time.Second)
@@ -40,8 +41,27 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				log.Printf("[UART] %v\n", string(buf))
-				logCh <- string(buf)
+
+				// 改行があればそこまででログ出力
+				foundReturn := false
+				for i, b := range buf {
+					if b == '\n' {
+						foundReturn = true
+						bufLine = append(bufLine, buf[:i]...)
+						log.Printf("[UART] %v", string(bufLine))
+						logCh <- string(bufLine)
+						if i+1 == len(buf) {
+							bufLine = []byte{}
+						} else {
+							bufLine = buf[i+1:]
+						}
+						break
+					}
+				}
+				// 改行がなければバッファに追加のみ
+				if !foundReturn {
+					bufLine = append(bufLine, buf...)
+				}
 			}
 			// TODO: ReConnect
 		}
