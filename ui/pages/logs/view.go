@@ -18,6 +18,8 @@ type View struct {
 	// textBox *widgets.CodeEditor
 	text []string
 
+	offsetY float32
+
 	// callbacks
 	onGetNewLog func(str string)
 	onClearLog  func()
@@ -27,6 +29,7 @@ func NewView(w *app.Window, theme *hakoniwatheme.Theme) *View {
 	return &View{
 		theme:  theme,
 		window: w,
+		text:   []string{"No Logs"},
 	}
 }
 
@@ -63,19 +66,20 @@ func (v *View) Layout(gtx layout.Context, theme *hakoniwatheme.Theme) layout.Dim
 		}
 	}
 
-	return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{
-			Axis:      layout.Vertical,
-			Alignment: layout.Start,
-		}.Layout(gtx,
-			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				// return v.textBox.Layout(gtx, theme)
-				return layout.Flex{
-					Axis:      layout.Vertical,
-					Alignment: layout.Start,
-					Spacing:   layout.SpaceStart,
-				}.Layout(gtx, items...)
-			}),
-		)
-	})
+	return inset.Layout(gtx,
+		func(gtx layout.Context) layout.Dimensions {
+			list := layout.List{
+				Axis: layout.Vertical,
+				Position: layout.Position{
+					Offset: int(v.offsetY),
+				},
+			}
+			return list.Layout(gtx, len(items),
+				func(gtx C, i int) D {
+					// return items[i](gtx, v.theme)
+					return material.Label(v.theme.Material(), unit.Sp(16), v.text[i]).Layout(gtx)
+				},
+			)
+		},
+	)
 }
