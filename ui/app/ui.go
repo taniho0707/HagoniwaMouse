@@ -10,8 +10,10 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/widget/material"
 
+	"github.com/taniho0707/HagoniwaMouse/ui/explorer"
 	"github.com/taniho0707/HagoniwaMouse/ui/hakoniwatheme"
 	"github.com/taniho0707/HagoniwaMouse/ui/pages/logs"
+	"github.com/taniho0707/HagoniwaMouse/ui/pages/maze"
 )
 
 type UI struct {
@@ -21,11 +23,11 @@ type UI struct {
 	sidebar *Sidebar
 	footer  *Footer
 
-	// mazeView *maze.View
-	logView *logs.View
+	mazeView *maze.View
+	logView  *logs.View
 
-	// mazeController *maze.Controller
-	logController *logs.Controller
+	mazeController *maze.Controller
+	logController  *logs.Controller
 
 	// mazeState *state.Maze
 
@@ -48,7 +50,7 @@ func New(w *app.Window) (*UI, error) {
 	// 	return nil, err
 	// }
 
-	// explorerController := explorer.NewExplorer(w)
+	explorerController := explorer.NewExplorer(w)
 
 	// u.repo = repo
 
@@ -72,6 +74,10 @@ func New(w *app.Window) (*UI, error) {
 	u.sidebar = NewSidebar(u.Theme)
 
 	u.footer = NewFooter(u.Theme)
+
+	u.mazeView = maze.NewView(w, u.Theme)
+	u.mazeController = maze.NewController(u.mazeView, explorerController)
+	// u.mazeState = state.NewMaze(repo)
 
 	u.logView = logs.NewView(w, u.Theme)
 	u.logController = logs.NewController(u.logView)
@@ -189,6 +195,8 @@ func (u *UI) Layout(gtx layout.Context) layout.Dimensions {
 						layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 							switch u.sidebar.SelectedIndex() {
 							case 0:
+								return u.mazeView.Layout(gtx, u.Theme)
+							case 2:
 								return u.logView.Layout(gtx, u.Theme)
 								// case 4:
 								//	return u.consolePage.Layout(gtx, u.Theme)

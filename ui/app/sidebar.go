@@ -39,8 +39,8 @@ func NewSidebar(theme *hakoniwatheme.Theme) *Sidebar {
 		cache: new(op.Ops),
 
 		Buttons: []*SideBarButton{
-			{Icon: widgets.ForwardIcon, Text: "Simulation"},
-			{Icon: widgets.EditorFormatListNumberedIcon, Text: "Parameters"},
+			{Icon: widgets.ForwardIcon, Text: "Sim"},
+			{Icon: widgets.EditorFormatListNumberedIcon, Text: "Params"},
 			// {Icon: widgets.WorkspacesIcon, Text: "Flash"},
 			// {Icon: widgets.FileFolderIcon, Text: "Config"},
 			{Icon: widgets.EditorShortText, Text: "Log"},

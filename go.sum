@@ -7,6 +7,10 @@ gioui.org/cpu v0.0.0-20220412190645-f1e9e8c3b1f7 h1:tNJdnP5CgM39PRc+KWmBRRYX/zJ+
 gioui.org/cpu v0.0.0-20220412190645-f1e9e8c3b1f7/go.mod h1:A8M0Cn5o+vY5LTMlnRoK3O5kG+rH0kWfJjeKd9QpBmQ=
 gioui.org/shader v1.0.8 h1:6ks0o/A+b0ne7RzEqRZK5f4Gboz2CfG+mVliciy6+qA=
 gioui.org/shader v1.0.8/go.mod h1:mWdiME581d/kV7/iEhLmUgUK5iZ09XR5XpduXzbePVM=
+gioui.org/x v0.7.1 h1:7bnQHsV7qB36tIUit2WDcUx4Cnmo+6T9I38B9brLQ7o=
+gioui.org/x v0.7.1/go.mod h1:5CzZ64oFpOaqb2kaMvj+QEr5T3nVuLKD0LizLH32ii0=
+git.wow.st/gmp/jni v0.0.0-20210610011705-34026c7e22d0 h1:bGG/g4ypjrCJoSvFrP5hafr9PPB5aw8SjcOWWila7ZI=
+git.wow.st/gmp/jni v0.0.0-20210610011705-34026c7e22d0/go.mod h1:+axXBRUTIDlCeE73IKeD/os7LoEnTKdkp8/gQOFjqyo=
 github.com/creack/goselect v0.1.2 h1:2DNy14+JPjRBgPzAd1thbQp4BSIihxcBf0IXhQXDRa0=
 github.com/creack/goselect v0.1.2/go.mod h1:a/NhLweNvqIYMuxcMOuWY516Cimucms3DglDzQP3hKY=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -15,6 +19,8 @@ github.com/go-text/typesetting v0.1.1 h1:bGAesCuo85nXnEN5LmFMVGAGpGkCPtHrZLi//qD
 github.com/go-text/typesetting v0.1.1/go.mod h1:d22AnmeKq/on0HNv73UFriMKc4Ez6EqZAofLhAzpSzI=
 github.com/go-text/typesetting-utils v0.0.0-20231211103740-d9332ae51f04 h1:zBx+p/W2aQYtNuyZNcTfinWvXBQwYtDfme051PR/lAY=
 github.com/go-text/typesetting-utils v0.0.0-20231211103740-d9332ae51f04/go.mod h1:DDxDdQEnB70R8owOx3LVpEFvpMK9eeH1o2r0yZhFI9o=
+github.com/godbus/dbus/v5 v5.0.6 h1:mkgN1ofwASrYnJ5W6U/BxG15eXXXjirgZc7CLqkcaro=
+github.com/godbus/dbus/v5 v5.0.6/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/oligo/gioview v0.5.1-0.20240805165652-db7ac64b4905 h1:iBiM6OWNacjpEy5qwflkvZC5pp6XJ3Fz5azIdEO7tmE=
 github.com/oligo/gioview v0.5.1-0.20240805165652-db7ac64b4905/go.mod h1:5wxSoxxJ7FOVPnEYhqlUrT451rOmL8DQZCTeVlbVkoY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
