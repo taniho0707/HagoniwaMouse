@@ -69,7 +69,7 @@ type Maze struct {
 
 func NewMaze() *Maze {
 	m := &Maze{
-		Zoom:             Zoom32,
+		Zoom:             Zoom16,
 		ZoomCenter:       ZoomCenterMaze,
 		BackgroundColor:  color.NRGBA{0xFF, 0xFF, 0xCC, 0xFF},
 		ExistWallColor:   color.NRGBA{0xFF, 0x00, 0x00, 0xFF},
@@ -129,7 +129,7 @@ func (m *Maze) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int, cent
 	case ZoomCenterMouse:
 		return image.Point{
 			X: windowX/2 + int((mmX-m.MouseAbsolutePos.X)*mmToPixelRatio),
-			Y: windowY/2 - int((m.MouseAbsolutePos.Y-mmY)*mmToPixelRatio),
+			Y: windowY/2 - int((mmY-m.MouseAbsolutePos.Y)*mmToPixelRatio),
 		}
 	default:
 		return image.Point{}
@@ -158,8 +158,8 @@ func (m *Maze) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int, cen
 		}
 	case ZoomCenterMouse:
 		return image.Point{
-			X: windowX/2 - m.MouseCentorPos.X - currentOffset.X,
-			Y: windowY/2 - m.MouseCentorPos.Y - currentOffset.Y,
+			X: windowX/2 - currentOffset.X,
+			Y: windowY/2 - currentOffset.Y,
 		}
 	default:
 		return image.Point{}
