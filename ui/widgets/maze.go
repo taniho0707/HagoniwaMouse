@@ -15,7 +15,6 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/widget"
 	"github.com/taniho0707/HagoniwaMouse/internal/mazedata"
-	"github.com/taniho0707/HagoniwaMouse/ui/hakoniwatheme"
 )
 
 const (
@@ -26,20 +25,20 @@ const (
 //go:embed maze/mouse.png
 var mouseImageFile embed.FS
 
-type zoommode int
+type ZoomRate int
 
 const (
-	Zoom32 zoommode = iota
+	Zoom32 ZoomRate = iota
 	Zoom16
 	Zoom8
 	Zoom4
 	Zoom2
 )
 
-type zoomcenter int
+type ZoomCenterMode int
 
 const (
-	ZoomCenterMaze zoomcenter = iota
+	ZoomCenterMaze ZoomCenterMode = iota
 	ZoomCenterMouse
 )
 
@@ -48,11 +47,11 @@ type Position struct {
 	Y float64
 }
 
-type Maze struct {
-	// MazeData *mazedata.MazeData
+type MazeStyle struct {
+	MazeData mazedata.MazeData
 
-	Zoom       zoommode
-	ZoomCenter zoomcenter
+	Zoom       ZoomRate
+	ZoomCenter ZoomCenterMode
 
 	BackgroundColor  color.NRGBA
 	ExistWallColor   color.NRGBA
@@ -67,9 +66,9 @@ type Maze struct {
 	MouseAbsoluteSize Position // mm 系での絶対サイズ
 }
 
-func NewMaze() *Maze {
-	m := &Maze{
-		Zoom:             Zoom16,
+func Maze() MazeStyle {
+	m := MazeStyle{
+		Zoom:             Zoom32,
 		ZoomCenter:       ZoomCenterMaze,
 		BackgroundColor:  color.NRGBA{0xFF, 0xFF, 0xCC, 0xFF},
 		ExistWallColor:   color.NRGBA{0xFF, 0x00, 0x00, 0xFF},
@@ -93,7 +92,7 @@ func NewMaze() *Maze {
 	return m
 }
 
-func (m *Maze) mmToPixelRatio(minWidthHeight int) float64 {
+func (m *MazeStyle) mmToPixelRatio(minWidthHeight int) float64 {
 	var ratio float64
 	switch m.Zoom {
 	case Zoom32:
@@ -110,7 +109,7 @@ func (m *Maze) mmToPixelRatio(minWidthHeight int) float64 {
 	return ratio
 }
 
-func (m *Maze) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int, center zoomcenter) image.Point {
+func (m *MazeStyle) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int, center ZoomCenterMode) image.Point {
 	var minWidthHeight int
 	if windowX > windowY {
 		minWidthHeight = windowY
@@ -136,7 +135,7 @@ func (m *Maze) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int, cent
 	}
 }
 
-func (m *Maze) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int, center zoomcenter) image.Point {
+func (m *MazeStyle) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int, center ZoomCenterMode) image.Point {
 	var minWidthHeight int
 	if windowX > windowY {
 		minWidthHeight = windowY
@@ -166,7 +165,27 @@ func (m *Maze) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int, cen
 	}
 }
 
-func (m *Maze) Layout(gtx C, theme *hakoniwatheme.Theme, maze *mazedata.MazeData) D {
+func (m *MazeStyle) SetZoom(zoom ZoomRate) {
+	m.Zoom = zoom
+}
+
+func (m *MazeStyle) SetZoomCenter(center ZoomCenterMode) {
+	m.ZoomCenter = center
+}
+
+func (m *MazeStyle) SetMouseAngle(angle float64) {
+	m.MouseAngle = angle
+}
+
+func (m *MazeStyle) SetMousePos(pos Position) {
+	m.MouseAbsolutePos = pos
+}
+
+func (m *MazeStyle) SetMazeData(maze mazedata.MazeData) {
+	m.MazeData = maze
+}
+
+func (m *MazeStyle) Layout(gtx C) D {
 	// 1. setup layout
 	//   - get size
 	width := gtx.Constraints.Max.X
@@ -182,7 +201,8 @@ func (m *Maze) Layout(gtx C, theme *hakoniwatheme.Theme, maze *mazedata.MazeData
 			pos0 := m.convertMmToPixelMaze(float64(x)*90.0, float64(y)*90.0, width, height, m.ZoomCenter)
 			pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
 			pillarClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
-			if insideRect(image.Rect(0, 0, width, height), pillarClip) {
+			if isInsideRect(image.Rect(0, 0, width, height), pillarClip) {
+				pillarClip = doInsideRect(image.Rect(0, 0, width, height), pillarClip)
 				// paint.FillShape(gtx.Ops, m.WallColor, pillarClip.Op())
 				paint.FillShape(gtx.Ops, m.ExistWallColor, clip.Rect(pillarClip).Op())
 			}
@@ -191,13 +211,14 @@ func (m *Maze) Layout(gtx C, theme *hakoniwatheme.Theme, maze *mazedata.MazeData
 	//   - draw horizontal  wall
 	for x := 0; x < 32; x++ {
 		for y := 0; y < 33; y++ {
-			if y == 0 || y == 32 || maze.HorizontalWalls[x][y-1] == mazedata.WallExist || maze.HorizontalWalls[x][y-1] == mazedata.WallUnknown {
+			if y == 0 || y == 32 || m.MazeData.HorizontalWalls[x][y-1] == mazedata.WallExist || m.MazeData.HorizontalWalls[x][y-1] == mazedata.WallUnknown {
 				pos0 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0, width, height, m.ZoomCenter)
 				pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth+WallWidth, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
 				horizontalWallClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
-				if insideRect(image.Rect(0, 0, width, height), horizontalWallClip) {
+				if isInsideRect(image.Rect(0, 0, width, height), horizontalWallClip) {
+					horizontalWallClip = doInsideRect(image.Rect(0, 0, width, height), horizontalWallClip)
 					color := m.UnknownWallColor
-					if y == 0 || y == 32 || maze.HorizontalWalls[x][y-1] == mazedata.WallExist {
+					if y == 0 || y == 32 || m.MazeData.HorizontalWalls[x][y-1] == mazedata.WallExist {
 						color = m.ExistWallColor
 					}
 					paint.FillShape(gtx.Ops, color, clip.Rect(horizontalWallClip).Op())
@@ -208,13 +229,14 @@ func (m *Maze) Layout(gtx C, theme *hakoniwatheme.Theme, maze *mazedata.MazeData
 	//   - draw vertical wall
 	for x := 0; x < 33; x++ {
 		for y := 0; y < 32; y++ {
-			if x == 0 || x == 32 || maze.VerticalWalls[x-1][y] == mazedata.WallExist || maze.VerticalWalls[x-1][y] == mazedata.WallUnknown {
+			if x == 0 || x == 32 || m.MazeData.VerticalWalls[x-1][y] == mazedata.WallExist || m.MazeData.VerticalWalls[x-1][y] == mazedata.WallUnknown {
 				pos0 := m.convertMmToPixelMaze(float64(x)*90.0, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
 				pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0+PillarWidth+WallWidth, width, height, m.ZoomCenter)
 				verticalWallClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
-				if insideRect(image.Rect(0, 0, width, height), verticalWallClip) {
+				if isInsideRect(image.Rect(0, 0, width, height), verticalWallClip) {
+					verticalWallClip = doInsideRect(image.Rect(0, 0, width, height), verticalWallClip)
 					color := m.UnknownWallColor
-					if x == 0 || x == 32 || maze.VerticalWalls[x-1][y] == mazedata.WallExist {
+					if x == 0 || x == 32 || m.MazeData.VerticalWalls[x-1][y] == mazedata.WallExist {
 						color = m.ExistWallColor
 					}
 					paint.FillShape(gtx.Ops, color, clip.Rect(verticalWallClip).Op())
@@ -237,7 +259,7 @@ func (m *Maze) Layout(gtx C, theme *hakoniwatheme.Theme, maze *mazedata.MazeData
 	}
 }
 
-func (m *Maze) mouseLayout(gtx C) {
+func (m *MazeStyle) mouseLayout(gtx C) {
 	width := gtx.Constraints.Max.X
 	height := gtx.Constraints.Max.Y
 	var minWidthHeight int
@@ -294,6 +316,26 @@ func (m *Maze) mouseLayout(gtx C) {
 	w.Layout(gtx)
 }
 
-func insideRect(whole image.Rectangle, target image.Rectangle) bool {
+func isInsideRect(whole image.Rectangle, target image.Rectangle) bool {
 	return whole.Min.X <= target.Max.X && whole.Min.Y <= target.Max.Y && whole.Max.X >= target.Min.X && whole.Max.Y >= target.Min.Y
+}
+
+func doInsideRect(whole image.Rectangle, target image.Rectangle) image.Rectangle {
+	ret := target
+	if ret.In(whole) {
+		return ret
+	}
+	if whole.Min.X >= target.Min.X {
+		ret.Min.X = whole.Min.X
+	}
+	if whole.Min.Y >= target.Min.Y {
+		ret.Min.Y = whole.Min.Y
+	}
+	if whole.Max.X <= target.Max.X {
+		ret.Max.X = whole.Max.X
+	}
+	if whole.Max.Y <= target.Max.Y {
+		ret.Max.Y = whole.Max.Y
+	}
+	return ret
 }

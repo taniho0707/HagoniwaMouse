@@ -23,15 +23,17 @@ type View struct {
 	split  widgets.SplitView
 
 	// maze
-	mazeWidget *widgets.Maze
+	MazeWidget widgets.MazeStyle
 
-	mazeData *mazedata.MazeData
+	MazeData *mazedata.MazeData
 
-	onMazeOpen  func()
-	onAllReset  func()
-	onZoomPlus  func()
-	onZoomMinus func()
-	onZoomReset func()
+	onMazeOpen       func()
+	onAllReset       func()
+	onZoomPlus       func()
+	onZoomMinus      func()
+	onZoomReset      func()
+	onSetMouseCenter func()
+	onSetMazeCenter  func()
 
 	// mouse on maze
 
@@ -46,13 +48,15 @@ type View struct {
 	titleInputLabel material.LabelStyle
 
 	// control
-	titleControlLabel   material.LabelStyle
-	mazeOpenButton      widget.Clickable
-	mazeFileName        string
-	allResetButton      widget.Clickable
-	mazeZoomPlusButton  widget.Clickable
-	mazeZoomMinusButton widget.Clickable
-	mazeZoomResetButton widget.Clickable
+	titleControlLabel    material.LabelStyle
+	mazeOpenButton       widget.Clickable
+	mazeFileName         string
+	allResetButton       widget.Clickable
+	mazeZoomPlusButton   widget.Clickable
+	mazeZoomMinusButton  widget.Clickable
+	mazeZoomResetButton  widget.Clickable
+	setMazeCenterButton  widget.Clickable
+	setMouseCenterButton widget.Clickable
 }
 
 func NewView(w *app.Window, theme *hakoniwatheme.Theme) *View {
@@ -66,8 +70,8 @@ func NewView(w *app.Window, theme *hakoniwatheme.Theme) *View {
 			BarWidth: unit.Dp(2),
 		},
 
-		mazeWidget: widgets.NewMaze(),
-		mazeData:   mazedata.NewMazeDataBlank(),
+		MazeWidget: widgets.Maze(),
+		MazeData:   mazedata.NewMazeDataBlank(),
 
 		titleInfoLabel:    material.H6(theme.Material(), "Maze"),
 		titleInputLabel:   material.H6(theme.Material(), "Input"),
@@ -98,8 +102,12 @@ func (v *View) SetOnZoomReset(f func()) {
 	v.onZoomReset = f
 }
 
-func (v *View) SetMazeData(mazeData *mazedata.MazeData) {
-	v.mazeData = mazeData
+func (v *View) SetOnMouseCenter(f func()) {
+	v.onSetMouseCenter = f
+}
+
+func (v *View) SetOnMazeCenter(f func()) {
+	v.onSetMazeCenter = f
 }
 
 func (v *View) Layout(gtx C, theme *hakoniwatheme.Theme) D {
@@ -116,7 +124,7 @@ func (v *View) Layout(gtx C, theme *hakoniwatheme.Theme) D {
 func (v *View) layoutLeft(gtx C, theme *hakoniwatheme.Theme) D {
 	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 		layout.Flexed(1, func(gtx C) D {
-			return v.layoutMaze(gtx, theme)
+			return v.layoutMaze(gtx)
 		}),
 		layout.Rigid(func(gtx C) D {
 			return v.layoutSeekbar(gtx, theme)
@@ -138,11 +146,11 @@ func (v *View) layoutRight(gtx C, theme *hakoniwatheme.Theme) D {
 	)
 }
 
-func (v *View) layoutMaze(gtx C, theme *hakoniwatheme.Theme) D {
+func (v *View) layoutMaze(gtx C) D {
 	return layout.Inset{}.Layout(gtx,
 		func(gtx C) D {
 			// return material.H1(theme.Material(), "Maze").Layout(gtx)
-			return v.mazeWidget.Layout(gtx, theme, v.mazeData)
+			return v.MazeWidget.Layout(gtx)
 		},
 	)
 }
@@ -236,6 +244,20 @@ func (v *View) layoutControl(gtx C, theme *hakoniwatheme.Theme) D {
 								v.onZoomReset()
 							}
 							return material.Button(theme.Material(), &v.mazeZoomResetButton, "0").Layout(gtx)
+						}),
+						layout.Rigid(layout.Spacer{Width: unit.Dp(20)}.Layout),
+						layout.Rigid(func(gtx C) D {
+							if v.setMazeCenterButton.Clicked(gtx) {
+								v.onSetMazeCenter()
+							}
+							return material.Button(theme.Material(), &v.setMazeCenterButton, "Maze").Layout(gtx)
+						}),
+						layout.Rigid(layout.Spacer{Width: unit.Dp(10)}.Layout),
+						layout.Rigid(func(gtx C) D {
+							if v.setMouseCenterButton.Clicked(gtx) {
+								v.onSetMouseCenter()
+							}
+							return material.Button(theme.Material(), &v.setMouseCenterButton, "Mouse").Layout(gtx)
 						}),
 					)
 				}),
