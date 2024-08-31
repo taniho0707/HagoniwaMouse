@@ -6,6 +6,7 @@ import (
 	"go.bug.st/serial"
 )
 
+// Read Write Close buffer size
 const RWC_BUFFER_SIZE = 4096
 
 type UartServer struct {

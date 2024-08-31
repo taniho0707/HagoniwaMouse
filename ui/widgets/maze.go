@@ -43,8 +43,8 @@ const (
 )
 
 type Position struct {
-	X float64
-	Y float64
+	X float32
+	Y float32
 }
 
 type MazeStyle struct {
@@ -59,7 +59,7 @@ type MazeStyle struct {
 
 	MouseImage     *image.Image
 	mouseImageOp   paint.ImageOp
-	MouseAngle     float64 // degree
+	MouseAngle     float32 // degree
 	MouseCentorPos image.Point
 
 	MouseAbsolutePos  Position // mm 系での絶対座標
@@ -92,24 +92,24 @@ func Maze() MazeStyle {
 	return m
 }
 
-func (m *MazeStyle) mmToPixelRatio(minWidthHeight int) float64 {
-	var ratio float64
+func (m *MazeStyle) mmToPixelRatio(minWidthHeight int) float32 {
+	var ratio float32
 	switch m.Zoom {
 	case Zoom32:
-		ratio = float64(minWidthHeight) / 2886.0
+		ratio = float32(minWidthHeight) / 2886.0
 	case Zoom16:
-		ratio = float64(minWidthHeight) / 1446.0
+		ratio = float32(minWidthHeight) / 1446.0
 	case Zoom8:
-		ratio = float64(minWidthHeight) / 726.0
+		ratio = float32(minWidthHeight) / 726.0
 	case Zoom4:
-		ratio = float64(minWidthHeight) / 366.0
+		ratio = float32(minWidthHeight) / 366.0
 	case Zoom2:
-		ratio = float64(minWidthHeight) / 186.0
+		ratio = float32(minWidthHeight) / 186.0
 	}
 	return ratio
 }
 
-func (m *MazeStyle) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int, center ZoomCenterMode) image.Point {
+func (m *MazeStyle) convertMmToPixelMaze(mmX, mmY float32, windowX, windowY int, center ZoomCenterMode) image.Point {
 	var minWidthHeight int
 	if windowX > windowY {
 		minWidthHeight = windowY
@@ -135,7 +135,7 @@ func (m *MazeStyle) convertMmToPixelMaze(mmX, mmY float64, windowX, windowY int,
 	}
 }
 
-func (m *MazeStyle) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int, center ZoomCenterMode) image.Point {
+func (m *MazeStyle) convertMmToPixelMouse(mmX, mmY float32, windowX, windowY int, center ZoomCenterMode) image.Point {
 	var minWidthHeight int
 	if windowX > windowY {
 		minWidthHeight = windowY
@@ -152,8 +152,8 @@ func (m *MazeStyle) convertMmToPixelMouse(mmX, mmY float64, windowX, windowY int
 	switch center {
 	case ZoomCenterMaze:
 		return image.Point{
-			X: int(mmX*mmToPixelRatio) - currentOffset.X,
-			Y: windowY - int(mmY*mmToPixelRatio) - currentOffset.Y,
+			X: int((mmX-PillarWidth/2)*mmToPixelRatio) - currentOffset.X,
+			Y: windowY - int((mmY-PillarWidth/2)*mmToPixelRatio) - currentOffset.Y,
 		}
 	case ZoomCenterMouse:
 		return image.Point{
@@ -173,12 +173,13 @@ func (m *MazeStyle) SetZoomCenter(center ZoomCenterMode) {
 	m.ZoomCenter = center
 }
 
-func (m *MazeStyle) SetMouseAngle(angle float64) {
+func (m *MazeStyle) SetMouseAngle(angle float32) {
 	m.MouseAngle = angle
 }
 
+// 左下柱の中心を (x, y) = (0, 0) とした座標系での指定
 func (m *MazeStyle) SetMousePos(pos Position) {
-	m.MouseAbsolutePos = pos
+	m.MouseAbsolutePos = Position{X: pos.X + PillarWidth/2, Y: pos.Y + PillarWidth/2}
 }
 
 func (m *MazeStyle) SetMazeData(maze mazedata.MazeData) {
@@ -198,8 +199,8 @@ func (m *MazeStyle) Layout(gtx C) D {
 	//   - draw piller
 	for x := 0; x < 33; x++ {
 		for y := 0; y < 33; y++ {
-			pos0 := m.convertMmToPixelMaze(float64(x)*90.0, float64(y)*90.0, width, height, m.ZoomCenter)
-			pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
+			pos0 := m.convertMmToPixelMaze(float32(x)*90.0, float32(y)*90.0, width, height, m.ZoomCenter)
+			pos1 := m.convertMmToPixelMaze(float32(x)*90.0+PillarWidth, float32(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
 			pillarClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
 			if isInsideRect(image.Rect(0, 0, width, height), pillarClip) {
 				pillarClip = doInsideRect(image.Rect(0, 0, width, height), pillarClip)
@@ -212,8 +213,8 @@ func (m *MazeStyle) Layout(gtx C) D {
 	for x := 0; x < 32; x++ {
 		for y := 0; y < 33; y++ {
 			if y == 0 || y == 32 || m.MazeData.HorizontalWalls[x][y-1] == mazedata.WallExist || m.MazeData.HorizontalWalls[x][y-1] == mazedata.WallUnknown {
-				pos0 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0, width, height, m.ZoomCenter)
-				pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth+WallWidth, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
+				pos0 := m.convertMmToPixelMaze(float32(x)*90.0+PillarWidth, float32(y)*90.0, width, height, m.ZoomCenter)
+				pos1 := m.convertMmToPixelMaze(float32(x)*90.0+PillarWidth+WallWidth, float32(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
 				horizontalWallClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
 				if isInsideRect(image.Rect(0, 0, width, height), horizontalWallClip) {
 					horizontalWallClip = doInsideRect(image.Rect(0, 0, width, height), horizontalWallClip)
@@ -230,8 +231,8 @@ func (m *MazeStyle) Layout(gtx C) D {
 	for x := 0; x < 33; x++ {
 		for y := 0; y < 32; y++ {
 			if x == 0 || x == 32 || m.MazeData.VerticalWalls[x-1][y] == mazedata.WallExist || m.MazeData.VerticalWalls[x-1][y] == mazedata.WallUnknown {
-				pos0 := m.convertMmToPixelMaze(float64(x)*90.0, float64(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
-				pos1 := m.convertMmToPixelMaze(float64(x)*90.0+PillarWidth, float64(y)*90.0+PillarWidth+WallWidth, width, height, m.ZoomCenter)
+				pos0 := m.convertMmToPixelMaze(float32(x)*90.0, float32(y)*90.0+PillarWidth, width, height, m.ZoomCenter)
+				pos1 := m.convertMmToPixelMaze(float32(x)*90.0+PillarWidth, float32(y)*90.0+PillarWidth+WallWidth, width, height, m.ZoomCenter)
 				verticalWallClip := image.Rect(pos0.X, pos0.Y, pos1.X, pos1.Y)
 				if isInsideRect(image.Rect(0, 0, width, height), verticalWallClip) {
 					verticalWallClip = doInsideRect(image.Rect(0, 0, width, height), verticalWallClip)

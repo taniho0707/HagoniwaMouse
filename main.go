@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"gioui.org/unit"
 
 	uart_server "github.com/taniho0707/HagoniwaMouse/server/uart"
+	udp_server "github.com/taniho0707/HagoniwaMouse/server/udp"
 	mainApp "github.com/taniho0707/HagoniwaMouse/ui/app"
 )
 
@@ -48,7 +50,7 @@ func main() {
 					if b == '\n' {
 						foundReturn = true
 						bufLine = append(bufLine, buf[:i]...)
-						log.Printf("[UART] %v", string(bufLine))
+						fmt.Printf("[UART] %v", string(bufLine))
 						logCh <- string(bufLine)
 						if i+1 == len(buf) {
 							bufLine = []byte{}
@@ -67,6 +69,16 @@ func main() {
 		}
 	}()
 
+	udpReceiveCh := make(chan udp_server.UdpCommand)
+	udpResponseCh := make(chan udp_server.UdpCommand)
+	udpServer := udp_server.NewUdpServer()
+	go func() {
+		if err := udpServer.Open(":3000"); err != nil {
+			panic(err)
+		}
+		udpServer.Run(udpReceiveCh, udpResponseCh)
+	}()
+
 	go func() {
 		var w app.Window
 		w.Option(app.Title("HagoniwaMouse"), app.Size(unit.Dp(1200), unit.Dp(800)))
@@ -75,7 +87,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		mainUI.SetChannels(logCh)
+		mainUI.SetChannels(logCh, udpReceiveCh, udpResponseCh)
 		if err := mainUI.Run(); err != nil {
 			log.Fatal(err)
 		}
