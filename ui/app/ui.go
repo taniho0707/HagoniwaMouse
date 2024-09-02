@@ -10,7 +10,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/widget/material"
 
-	udp_server "github.com/taniho0707/HagoniwaMouse/server/udp"
+	udp_domain "github.com/taniho0707/HagoniwaMouse/server/domain"
 	"github.com/taniho0707/HagoniwaMouse/ui/explorer"
 	"github.com/taniho0707/HagoniwaMouse/ui/hakoniwatheme"
 	"github.com/taniho0707/HagoniwaMouse/ui/pages/logs"
@@ -146,7 +146,7 @@ func (u *UI) load() error {
 	return nil
 }
 
-func (u *UI) SetChannels(logCh chan string, udpReceiveCh chan udp_server.UdpCommand, udpResponseCh chan udp_server.UdpCommand) {
+func (u *UI) SetChannels(logCh chan string, udpReceiveCh chan udp_domain.UdpCommand, udpResponseCh chan udp_domain.UdpCommand) {
 	u.logController.SetChannels(u.window, logCh)
 	u.mazeController.SetChannels(u.window, udpReceiveCh, udpResponseCh)
 }

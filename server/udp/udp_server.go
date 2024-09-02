@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	udp_domain "github.com/taniho0707/HagoniwaMouse/server/domain"
+	"github.com/taniho0707/HagoniwaMouse/simulator"
 )
 
 const RWC_BUFFER_SIZE = 4096
@@ -70,7 +73,9 @@ func (u *UdpServer) Write(data []byte) error {
 	return nil
 }
 
-func (u *UdpServer) Run(udpReceiveCh chan UdpCommand, udpResponseCh chan UdpCommand) error {
+func (u *UdpServer) Run(udpReceiveCh chan udp_domain.UdpCommand, udpResponseCh chan udp_domain.UdpCommand) error {
+	sim := simulator.NewSimulator()
+
 	for {
 		buf, addr, err := u.Read()
 		if err != nil {
@@ -85,14 +90,23 @@ func (u *UdpServer) Run(udpReceiveCh chan UdpCommand, udpResponseCh chan UdpComm
 
 		fmt.Printf("[UDP] %v %v\n", addr, cmd)
 
+		// Simulator に値を渡して UdpCommand を上書き
+		err = sim.Next(&cmd)
+		if err != nil {
+			log.Printf("[UDP Sim] %v", err)
+			continue
+		}
+
+		// UdpCommand.Code が GetMousePosition のとき、100 回に 1 回 History に追加
+
 		udpReceiveCh <- cmd
 		v, ok := <-udpResponseCh
 		if !ok {
 			return errors.New("udpResponseCh is closed")
 		}
 
-		if v.Code != CommandInternalNoResponse {
-			res, err := v.Build()
+		if v.Code != udp_domain.CommandInternalNoResponse {
+			res, err := BuildBytesFromUdpCommand(&v)
 			if err != nil {
 				log.Printf("[UDP] %v", err)
 				continue

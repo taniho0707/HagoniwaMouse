@@ -7,7 +7,7 @@ import (
 	"gioui.org/app"
 
 	"github.com/taniho0707/HagoniwaMouse/internal/mazedata"
-	udp_server "github.com/taniho0707/HagoniwaMouse/server/udp"
+	udp_domain "github.com/taniho0707/HagoniwaMouse/server/domain"
 	"github.com/taniho0707/HagoniwaMouse/ui/explorer"
 	"github.com/taniho0707/HagoniwaMouse/ui/widgets"
 )
@@ -118,50 +118,50 @@ func (c *Controller) onSetMazeCenter() {
 }
 
 // return: needUpdate bool, udpData udp_server.UdpCommand
-func (c *Controller) onGetNewUdpData(udpData udp_server.UdpCommand) (bool, udp_server.UdpCommand) {
+func (c *Controller) onGetNewUdpData(udpData udp_domain.UdpCommand) (bool, udp_domain.UdpCommand) {
 	switch udpData.Code {
-	case udp_server.CommandSetMousePosition:
+	case udp_domain.CommandSetMousePosition:
 		c.view.MazeWidget.SetMousePos(widgets.Position{X: udpData.MousePositionX, Y: udpData.MousePositionY})
 		c.view.MazeWidget.SetMouseAngle(udpData.MousePositionAngle)
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandGetMouseWallsensorValue:
-		return false, udp_server.UdpCommand{Code: udp_server.CommandResultSuccess} // FIXME: return simulated value
-	case udp_server.CommandGetMouseImuValue:
-		return false, udp_server.UdpCommand{Code: udp_server.CommandResultSuccess} // FIXME: return simulated value
-	case udp_server.CommandGetMouseBatteryValue:
-		return false, udp_server.UdpCommand{Code: udp_server.CommandResultSuccess} // FIXME: return simulated value
-	case udp_server.CommandGetMouseEncoderValue:
-		return false, udp_server.UdpCommand{Code: udp_server.CommandResultSuccess} // FIXME: return simulated value
-	case udp_server.CommandSetMaze:
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandGetMouseWallsensorValue:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandResultSuccess} // FIXME: return simulated value
+	case udp_domain.CommandGetMouseImuValue:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandResultSuccess} // FIXME: return simulated value
+	case udp_domain.CommandGetMouseBatteryValue:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandResultSuccess} // FIXME: return simulated value
+	case udp_domain.CommandGetMouseEncoderValue:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandResultSuccess} // FIXME: return simulated value
+	case udp_domain.CommandSetMaze:
 		// c.view.MazeData = mazedata.NewMazeDataFromUdpCommand(udpData.MazeName) // FIXME: load maze data
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetMouseModel:
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetMouseModel:
 		// TODO: set mouse model
-		return false, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetMouseWallsensorType:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetMouseWallsensorType:
 		// TODO: set wallsensor type
-		return false, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetMouseWallsensorNum:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetMouseWallsensorNum:
 		// TODO: set wallsensor num
-		return false, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetMazeCellMarker:
+		return false, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetMazeCellMarker:
 		// TODO: set maze cell marker
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetPathByCell:
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetPathByCell:
 		// TODO: set path by cell
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandSetPathByPosition:
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandSetPathByPosition:
 		// TODO: set path by position
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
-	case udp_server.CommandDeletePathAll:
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
+	case udp_domain.CommandDeletePathAll:
 		// TODO: delete all path
-		return true, udp_server.UdpCommand{Code: udp_server.CommandInternalNoResponse}
+		return true, udp_domain.UdpCommand{Code: udp_domain.CommandInternalNoResponse}
 	default:
 		return false, udpData
 	}
 }
 
-func (c *Controller) SetChannels(w *app.Window, udpReceiveCh chan udp_server.UdpCommand, udpResponseCh chan udp_server.UdpCommand) {
+func (c *Controller) SetChannels(w *app.Window, udpReceiveCh chan udp_domain.UdpCommand, udpResponseCh chan udp_domain.UdpCommand) {
 	go func() {
 		for udpData := range udpReceiveCh {
 			needUpdate, responseData := c.onGetNewUdpData(udpData)

@@ -11,6 +11,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/unit"
 
+	udp_domain "github.com/taniho0707/HagoniwaMouse/server/domain"
 	uart_server "github.com/taniho0707/HagoniwaMouse/server/uart"
 	udp_server "github.com/taniho0707/HagoniwaMouse/server/udp"
 	mainApp "github.com/taniho0707/HagoniwaMouse/ui/app"
@@ -69,8 +70,8 @@ func main() {
 		}
 	}()
 
-	udpReceiveCh := make(chan udp_server.UdpCommand)
-	udpResponseCh := make(chan udp_server.UdpCommand)
+	udpReceiveCh := make(chan udp_domain.UdpCommand)
+	udpResponseCh := make(chan udp_domain.UdpCommand)
 	udpServer := udp_server.NewUdpServer()
 	go func() {
 		if err := udpServer.Open(":3000"); err != nil {

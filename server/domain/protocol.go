@@ -1,4 +1,4 @@
-package udp_server
+package domain
 
 type CellMarkerType uint8
 
